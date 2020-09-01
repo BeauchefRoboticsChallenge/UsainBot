@@ -29,7 +29,7 @@ UsainBot se diseñó considerando este set mínimo de subsistemas, las tecnolog�
 
 ### Sensores
 
-UsainBot cuenta con un arreglo de sensores infrarrojos modelo asdasdasdsad en el frente. Esta disposición permite detectar con cierto nivel de resolución la desviación del eje central del robot respecto a la franja del circuito:
+UsainBot cuenta con un arreglo de sensores infrarrojos modelo asdasdasdsad en el frente. Esta disposición permite detectar con cierto nivel de resolución la desviación del eje central del robot respecto a la franja del circuito y tener un mejor control:
 
 (esquema)
 
@@ -39,19 +39,37 @@ También posee dos sensores simples del mismo tipo (modelo sadads) en cada lado 
 
 ### Actuación
 
+El robot posee una configuración diferencial, dos ruedas controladas por motores DC idénticos modelo asdasdsad, de x rpm nominales y v Volts. 
+
+La llanta de la rueda, impresa en 3D, posee una muesca donde se inserta el eje del motor (que tiene una muesca opuesta) a presión, mientras que el neumático es de silicona.
+
+Los motores se apernan al chasis mediante soportes impresos en 3D.
+
+Considerando la corriente que requieren estos motores elegimos utilizar como driver el puente H sadasdasdasd.
+
 ### Controlador
+
+Decidimos utilizar un Arduino Nano por varias razones: Soporte de software, tamaño, lógica de 5V (compatible con el resto de componentes), disponibilidad, precio, facilidad de uso (cuenta con pines y puerto USB), entre otras.
 
 ### Batería
 
-### Chasis
+Considerando el voltaje necesario para el controlador y los motores, los cuales además suelen requerir altos niveles de corriente súbitamente es que elegimos utilizar una batería LiPo de 7.4 V modelo asdsdasad. Con tal capacidad permitirá realizar pruebas un par de horas antes de volver a cargarla sin conllevar mucho peso sobre el sistema.
 
-### Otros
+### Chasis
 
 Con el objetivo de minimizar el peso y tamaño se diseña una PCB con doble propósito: ubicar los componentes en el mínimo espacio posible y como chasis del robot, considerando que la placa de sadklsdajlkasdjlk tiene rigidez suficiente.
 
 (imagen de la PCB)
 
 La PCB tiene conectores para intercambiar fácilmente los componentes en caso de que sufran algún desperfecto, así como orificios para el montaje de los motores.
+
+### Otros
+
+Como tercer punto de apoyo se utiliza la parte cabeza de un LED redondo.
+
+Utilizamos un buzzer standard de 5V para que el robot informe mediante alertas sonoras el estado en el que se encuentra.
+
+Incluimos un switch para energizar los sistemas desde la batería y un pulsador para iniciar la rutina de carrera.
 
 # Lista de partes y materiales
 
@@ -82,22 +100,49 @@ Chasis PCB | 1
 
 ## Materiales
 
-su weed
-conectores
+- pines, conectores,
+- placa fr-4
+- silicona epóxica 20-50 Shore A
+- pernos m3x8 (4)
+- tuerca m3 (4)
 
 # Manufactura
 
-## Herramientas necesarias
-
 ## Componentes
 
-### Llantas
+### Llantas y neumáticos
 
-### Neumáticos
+Dado que tenemos acceso a una impresora de tipo SLA (Form2), decidimos fabricar las llantas con resina tenaz (Tough Resin) para soportar posibles golpes y el ajuste a presión sobre el eje, y moldes para los neumáticos con resina estándar translúcida (Clear Resin), pues de esta forma es fácil desprender la pieza moldeada del molde mismo y además permite observar la presencia de burbujas durante el procseo de curado. 
+
+El neumático se fabrica directamente sobre la llanta, como se muestra en el diagrama:
+
+Para el proceso es necesario mezclar la silicona en partes iguales, revolver y degasificar rapidamente antes de que la silicona empiece a solidificarse.
+
+### Anclajes de motor
+
+Estos anclajes afirman el motor utilizando pernos M3x8 y tuercas M3, son impresos en FDM con PLA.
 
 ### PCB
 
+Para la manufactura de la PCB contamos con una máquina LPKF modelo sadasdsda. Las herramientas que utilizamos para el corte son:
+
+- sdaasd
+- asdsd
+- sadsdasadsda
+
+Antes de empezar a soldar los componentes es importante probar la integridad de las pistas midiendo la conductividad con un multímetro, para evitar corto circuitos y circuitos abiertos.
+
+Luego soldamos los pines, buzzer, pulsador, switch y LED de acuerdo al esquema.
+
 ## Ensamble
+
+1.- Montar las ruedas en cada motor
+2.- Montar los motores con sus anclajes sobre la PCB.
+3.- Conectar Arduino Nano
+4.- Conectar sensores laterales
+5.- Conectar arreglo de sensores frontal.
+6.- Conectar driver.
+7.- Montar batería con un elástico y conectar.
 
 # Software
 
@@ -128,8 +173,6 @@ El funcionamiento óptimo del robot implica maximizar la velocidad manteniendo e
 ### Calibración "manual"
 
 De acuerdo al comportamiento observado en las pruebas, se pueden hacer las siguientes modificaciones:
-
-
 
 # Posibles desarrollos
 
