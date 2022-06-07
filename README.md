@@ -1,6 +1,8 @@
 # UsainBot
+[![CC BY NC SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
-UsainBot es un robot velocista del tipo seguidor de líneas cuyo objetivo es servir de referencia y como plataforma para apoyar en la formación de los competidores. Está desarrollado en base a las tecnologías disponibles en un FabLab (impresión 3D, corte de PCBs, Arduino) y comprende las componentes más básicas para funcionar de acuerdo a las reglas de la competencia.
+
+UsainBot es un robot velocista del tipo seguidor de líneas cuyo objetivo es servir de referencia y plataforma para apoyar en la formación de los competidores. Está desarrollado en base a las tecnologías disponibles en un FabLab (impresión 3D, corte de PCBs, Arduino) y comprende las componentes más básicas para funcionar de acuerdo a las reglas de la competencia.
 
 Un velocista seguidor de línea es un robot con ruedas que tiene la capacidad de distinguir franjas en una superficie de alto contraste (blanco y negro) y seguir su trayectoria de forma autónoma con la finalidad de completar un circuito lo más rápido posible.
 
@@ -10,10 +12,10 @@ Un velocista seguidor de línea es un robot con ruedas que tiene la capacidad de
 
 Las funciones principales requeridas por el robot son:
 
-- Reconocer franjas 
+- Reconocer franjas
 - Movimiento
-- Energía 
-- Procesamiento y control 
+- Energía
+- Procesamiento y control
 
 Para esto requiere una construcción óptima en cuanto al tamaño/peso y las prestaciones de sus componentes que cumplirán estas funcionalidades, las cuales pueden ser desempeñadas por diferentes tipos y arreglos de sensores, motores, baterías, etc. Otras funciones secundarias corresponden a la interacción con el usuario (encender/apagar, activar, indicar acciones), así como cualquier otra que se desee agregar (como comunicación inalámbrica para el debugging).
 
@@ -33,13 +35,13 @@ UsainBot cuenta con un arreglo de sensores infrarrojos modelo asdasdasdsad en el
 
 (esquema)
 
-También posee dos sensores simples del mismo tipo (modelo sadads) en cada lado para la detección de franjas. 
+También posee dos sensores simples del mismo tipo (modelo sadads) en cada lado para la detección de franjas.
 
 (imagen con zoom)
 
 ### Actuación
 
-El robot posee una configuración diferencial, dos ruedas controladas por motores DC idénticos modelo asdasdsad, de x rpm nominales y v Volts. 
+El robot posee una configuración diferencial, dos ruedas controladas por motores DC idénticos modelo asdasdsad, de x rpm nominales y v Volts.
 
 La llanta de la rueda, impresa en 3D, posee una muesca donde se inserta el eje del motor (que tiene una muesca opuesta) a presión, mientras que el neumático es de silicona.
 
@@ -85,7 +87,7 @@ Arduino Nano | 1
 Lipo 7.4V | 1
 Pulsador | 1
 Switch | 1
-LED | 1 
+LED | 1
 Buzzer | 1
 
 Otros elementos necesarios para el desarrollo del robot pero no que son parte del mismo corresponden a: cargador de LiPo, alarma de carga de batería.
@@ -112,7 +114,7 @@ Chasis PCB | 1
 
 ### Llantas y neumáticos
 
-Dado que tenemos acceso a una impresora de tipo SLA (Form2), decidimos fabricar las llantas con resina tenaz (Tough Resin) para soportar posibles golpes y el ajuste a presión sobre el eje, y moldes para los neumáticos con resina estándar translúcida (Clear Resin), pues de esta forma es fácil desprender la pieza moldeada del molde mismo y además permite observar la presencia de burbujas durante el procseo de curado. 
+Dado que tenemos acceso a una impresora de tipo SLA (Form2), decidimos fabricar las llantas con resina tenaz (Tough Resin) para soportar posibles golpes y el ajuste a presión sobre el eje, y moldes para los neumáticos con resina estándar translúcida (Clear Resin), pues de esta forma es fácil desprender la pieza moldeada del molde mismo y además permite observar la presencia de burbujas durante el procseo de curado.
 
 El neumático se fabrica directamente sobre la llanta, como se muestra en el diagrama:
 
@@ -168,17 +170,21 @@ Una vez que el sistema está ensamblado, los componentes deben ser probados sepa
 
 ## Calibración del PID
 
-El funcionamiento óptimo del robot implica maximizar la velocidad manteniendo el robot moviéndose dentro de la franja y colineal con esta. Para esto es necesario encontrar una configuración óptima de los parámetros del PID. 
+El funcionamiento óptimo del robot implica maximizar la velocidad manteniendo el robot moviéndose dentro de la franja y colineal con esta. Para esto es necesario encontrar una configuración óptima de los parámetros del PID.
 
 ### Calibración "manual"
 
 De acuerdo al comportamiento observado en las pruebas, se pueden hacer las siguientes modificaciones:
 
-# Posibles desarrollos
 
-- Utilizar encoders en los motores, para tener un mayor control de la cinemática.
+## Licencia
+[![CC BY NC SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
 
+Este trabajo esta publicado bajo la licencia [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+License][cc-by-nc-sa].
 
+Si deseas utilizar nuestro robot en tus proyectos o si te interesa vender las placas, contáctanos y conversemos :)
 
-
-
+[cc-by-nc-sa]: https://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-image]: https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY%20NC%20SA%204.0-lightgrey.svg
