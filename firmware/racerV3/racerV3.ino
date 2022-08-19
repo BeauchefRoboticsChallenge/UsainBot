@@ -28,24 +28,8 @@
 #include <Adafruit_NeoPixel.h>
 #include <QTRSensors.h>
 
-// Wheel pins
-// Left wheel (LW)
-#define PIN_LW_PWM 6
-#define PIN_LW_A 13
-#define PIN_LW_B 10
-
-// Right wheel (RW)
-#define PIN_RW_PWM 5
-#define PIN_RW_A 11
-#define PIN_RW_B 12
-
-// Right sensor
-#define PIN_RS A1
-// Left sensor
-#define PIN_LS A0
-
-#define LED_PIN 9
-#define BUTTON_PIN 7
+// pinout del robot
+#include "BRCito_defines.h"
 
 // General definitions
 #define LW 0 // left wheel
@@ -86,8 +70,8 @@ float pos = 0;
 
 int counter = 0;
 
-uint16_t sensorSide[2];
-uint16_t sensorLine[6];
+uint16_t sensorSide[NUM_SIDE_SENSORS];
+uint16_t sensorLine[NUM_ARRAY_SENSORS];
 
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(2, LED_PIN, NEO_GRB + NEO_KHZ800);
 QTRSensors qtr_line, qtr_side;
@@ -128,11 +112,11 @@ void setupSensors() {
   qtr_side.setTypeRC();
   qtr_side.setSensorPins((const uint8_t[]) {
     PIN_LS, PIN_RS
-  }, 2);
+  }, NUM_SIDE_SENSORS);
   qtr_line.setTypeAnalog();
   qtr_line.setSensorPins((const uint8_t[]) {
-    A2, A3, A4, A5, A6, A7
-  }, 6);
+    S1, S2, S3, S4, S5, S6,
+  }, NUM_ARRAY_SENSORS);
 
 #ifdef CALIBRATE
   pixel.setPixelColor(0, RED);
