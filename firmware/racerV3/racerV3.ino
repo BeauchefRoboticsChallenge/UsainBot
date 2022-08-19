@@ -20,7 +20,7 @@
 
 #define CALIBRATE
 // serial debug
-#define DEBUG
+//#define DEBUG
 
 #define LINE_WHITE
 
@@ -167,18 +167,25 @@ void setup() {
     if(boton == 0) break;
   }
   delay(1000);
+  
+  pixel.setPixelColor(0, GREEN);
+  pixel.show();
+
+  pixel.setPixelColor(1, MAGENTA);
+  pixel.show();
 }
 
 void loop() {
   //testBlink();
 
   onWheels();
-  //testWheel(RW);
-  //delay(1000);
-  //testWheel(LW);
-  //delay(1000);
-  //handBrake();
-
+  /*
+  testWheel(RW);
+  delay(1000);
+  testWheel(LW);
+  delay(1000);
+  handBrake();
+  */
 #ifdef DEBUG_SENSORS
   readRawSensors();
   delay(10);
@@ -186,11 +193,6 @@ void loop() {
   
   lineFollowing();
 
-  pixel.setPixelColor(0, GREEN);
-  pixel.show();
-
-  pixel.setPixelColor(1, MAGENTA);
-  pixel.show();
 
 }
 
