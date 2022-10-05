@@ -37,20 +37,20 @@
 
 #define TIMEOUT 2500
 
-// speed
+// Estos valores definen las velocidades de las ruedas
 #define VEL_MIN 0
 #define VEL_MAX 255
-#define VEL_CURVA 180
-#define MIN_ERR_THR 250
+#define VEL_CURVA 200
+#define MIN_ERR_THR 200
 
+// parámetros del controlador PID, para motores pololu de 1000rpm KP<1
+float KP = 2; // 0.3
+float KI = 0.0;
+float KD = 5; 
 
 int r_sensor = 0;
 int l_sensor = 0;
 int st_sensor = 0;
-
-float KP = 0.5; // 0.3
-float KI = 0.0;
-float KD = 12;
 
 float prop_err, int_err, der_err, last_err;
 float pid_out;
