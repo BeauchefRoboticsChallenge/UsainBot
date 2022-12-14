@@ -20,7 +20,7 @@
 
 #define CALIBRATE
 // serial debug
-//#define DEBUG
+#define DEBUG
 
 #define LINE_WHITE
 
@@ -38,24 +38,40 @@
 #define TIMEOUT 2500
 
 // Estos valores definen las velocidades de las ruedas
-#define VEL_MIN 0
-#define VEL_MAX 255
-#define VEL_CURVA 200
-#define MIN_ERR_THR 200
+#define VEL_MIN 10
+#define VEL_MAX 100
+#define VEL_CURVA 50
+#define MIN_ERR_THR 500//150
 
 // parámetros del controlador PID, para motores pololu de 1000rpm KP<1
-float KP = 2; // 0.3
+float KP = 1; // 0.3 //2
 float KI = 0.0;
-float KD = 5; 
+float KD = 5;  //5
+
+// side sensor threshold
+#define RS_TH 500
+#define LS_TH 500
 
 int r_sensor = 0;
 int l_sensor = 0;
+int r_counter = 0;
+int l_counter = 0;
 int st_sensor = 0;
 
 float prop_err, int_err, der_err, last_err;
 float pid_out;
 
 bool stdby_state = 0;
+
+// Variables will change:
+int idleState = HIGH;       // the current state of the robot
+int buttonState;            // the current reading from the input pin
+int lastButtonState = LOW;  // the previous reading from the input pin
+
+// the following variables are unsigned longs because the time, measured in
+// milliseconds, will quickly become a bigger number than can be stored in an int.
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 uint8_t lw_speed;
 uint8_t rw_speed;
@@ -78,9 +94,14 @@ QTRSensors qtr_line, qtr_side;
 
 uint32_t BLACK = pixel.Color(0, 0, 0);
 uint32_t RED = pixel.Color(255, 0, 0); // rojo
-uint32_t MAGENTA = pixel.Color(255, 0, 200); // magenta
 uint32_t GREEN = pixel.Color(0, 255, 0); // magenta
+uint32_t BLUE = pixel.Color(0, 0, 200); // magenta
+uint32_t MAGENTA = pixel.Color(255, 0, 200); // magenta
 uint32_t YELLOW = pixel.Color(255, 140, 0); // magenta
+uint32_t ORANGE = pixel.Color(255, 50, 0); // magenta
+uint32_t CYAN = pixel.Color(0, 140, 200); // cyan
+
+int state = STDBY;
 
 //-------------------------------
 // Setup functions
@@ -119,16 +140,17 @@ void setupSensors() {
   }, NUM_ARRAY_SENSORS);
 
 #ifdef CALIBRATE
-  pixel.setPixelColor(0, RED);
+  pixel.setPixelColor(LED_UP, RED);
   pixel.show();
-  Serial.println("Calibrando...");
-  for (int i = 0; i < 200; i++)  // make the calibration take about 10 seconds
+  DEBUG_PRINT("Calibrando...");
+  for (int i = 0; i < 100; i++)  // make the calibration take about 10 seconds
   {
     qtr_line.calibrate();
     qtr_side.calibrate();
   }
   pixel.setPixelColor(0, BLACK);
   pixel.show();
+  DEBUG_PRINTLN("ok");
 #endif
 }
 
@@ -141,44 +163,96 @@ void setup() {
   setupHW();
   setupSensors();
 
+  delay(500);
+
   pixel.setBrightness(100);
-  pixel.setPixelColor(0, YELLOW);
+  pixel.setPixelColor(LED_UP, YELLOW);
   pixel.show();
   delay(500);
 
-  while(true){
+  while (true) {
     int boton = digitalRead(BUTTON_PIN);
-    if(boton == 0) break;
+    if (boton == 0) break;
   }
-  delay(1000);
-  
-  pixel.setPixelColor(0, GREEN);
+  delay(100);
+
+  pixel.setPixelColor(LED_UP, GREEN);
   pixel.show();
 
-  pixel.setPixelColor(1, MAGENTA);
+  pixel.setPixelColor(LED_DOWN, BLUE);
   pixel.show();
+  state = FOLLOW_LINE;
 }
 
 void loop() {
-  //testBlink();
-
-  onWheels();
-  /*
-  testWheel(RW);
-  delay(1000);
-  testWheel(LW);
-  delay(1000);
-  handBrake();
-  */
-#ifdef DEBUG_SENSORS
+  // Step 1: Read Raw Sensors
   readRawSensors();
-  delay(10);
-#endif
-  
-  lineFollowing();
 
+
+  //testBlink();
+  /*
+    testWheel(RW);
+    delay(1000);
+    testWheel(LW);
+    delay(1000);
+    handBrake();
+  */
+
+  int btn = digitalRead(BUTTON_PIN);
+  // If the switch changed, due to noise or pressing:
+  if (btn != lastButtonState) {
+    // reset the debouncing timer
+    lastDebounceTime = millis();
+  }
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // whatever the reading is at, it's been there for longer than the debounce
+    // delay, so take it as the actual current state:
+
+    // if the button state has changed:
+    if (btn != buttonState) {
+      buttonState = btn;
+
+      // only toggle the LED if the new button state is HIGH
+      if (buttonState == HIGH) {
+        idleState = !idleState;
+      }
+    }
+  }
+  //DEBUG_PRINTLN(btn);
+
+  if (idleState == LOW) {
+    onWheels();
+    lineFollowing();
+    if (l_sensor < LS_TH) {
+      l_counter++;
+      pixel.setPixelColor(LED_UP, GREEN);
+      pixel.show();
+    }
+    else if (r_sensor < RS_TH) {
+      r_counter++;
+      pixel.setPixelColor(LED_UP, ORANGE);
+      pixel.show();
+    }
+    else{
+      pixel.setPixelColor(LED_UP, BLACK);
+      pixel.setPixelColor(LED_DOWN, BLUE);
+      pixel.show();
+    }
+    if (l_sensor < LS_TH && r_sensor < RS_TH){
+      pixel.setPixelColor(LED_UP, BLUE);
+      pixel.show();
+    }
+  }
+  else if (idleState == HIGH) {
+    pixel.setPixelColor(LED_UP, RED);
+    pixel.setPixelColor(LED_DOWN, RED);
+    pixel.show();
+    handBrake();
+  }
+  lastButtonState = btn;
 
 }
+
 
 //-------------------------------
 // Line following functions
@@ -186,7 +260,7 @@ void loop() {
 
 void lineFollowing() {
   // Step 1: Read Raw Sensors
-  readRawSensors();
+  // readRawSensors(); -> se lee en el inicio del loop
   // Step 2: Compute error
   computeError();
   // Step 3: Compute PID correction
@@ -198,9 +272,20 @@ void lineFollowing() {
 }
 
 void readRawSensors() {
-#ifdef DEBUG_SENSORS
+
   qtr_line.readCalibrated(sensorLine);
   qtr_side.readCalibrated(sensorSide);
+
+#ifdef LINE_WHITE
+  pos = qtr_line.readLineWhite(sensorLine);
+#else
+  pos = qtr_line.readLineBlack(sensorLine);
+#endif
+
+  l_sensor = sensorSide[0];
+  r_sensor = sensorSide[1];
+
+#ifdef DEBUG_SENSORS
   for (uint8_t i = 0; i < 6; i++) {
     Serial.print(sensorLine[i]);
     Serial.print('\t');
@@ -210,32 +295,10 @@ void readRawSensors() {
     Serial.print('\t');
   }
   Serial.println();
-
-#ifdef LINE_WHITE
-  pos = qtr_line.readLineWhite(sensorLine);
-#else
-  pos = qtr_line.readLineBlack(sensorLine);
 #endif
-
   //DEBUG_PRINTLN(pos);
-  l_sensor = sensorSide[0];
-  r_sensor = sensorSide[1];
-
-#else
-  qtr_line.readCalibrated(sensorLine);
-  qtr_side.readCalibrated(sensorSide);
-#ifdef LINE_WHITE
-  pos = qtr_line.readLineWhite(sensorLine);
-#else
-  pos = qtr_line.readLineBlack(sensorLine);
-#endif
-
-  l_sensor = sensorSide[0];
-  r_sensor = sensorSide[1];
-  DEBUG_PRINTLN(pos);
-  //position = map(position, 0, 5000, -255, 255);
-  //delay(500);
-#endif
+  //DEBUG_PRINTLN(l_sensor);
+  DEBUG_PRINTLN(r_sensor);
 
 }
 
@@ -262,16 +325,12 @@ void computeMotorSpeeds() {
   if ( pid_out > MIN_ERR_THR ) {
     lw_speed = map(pid_out, -2500, 2500, VEL_MIN, VEL_CURVA);
     rw_speed = VEL_MIN; //TODO: apagar motor
-    //handBreakRight(); // creo que esto hace que se muera el robot cuando salga de la línea
   }
   else if ( pid_out < -MIN_ERR_THR ) {
     lw_speed = VEL_MIN;
     rw_speed = map(pid_out, -2500, 2500, VEL_CURVA, VEL_MIN);
-    //handBreakLeft();
   }
   else {
-    //onWheels();
-    // TODO: arreglar este mapeo:
     lw_speed = map(pid_out, -2500, 2500, VEL_MAX, VEL_MIN);
     rw_speed = map(pid_out, -2500, 2500, VEL_MAX, VEL_MIN);
   }
@@ -286,11 +345,13 @@ void setMotorSpeeds() {
 }
 
 void handBrakeLeft() {
+  analogWrite(PIN_LW_PWM, 0);
   digitalWrite(PIN_LW_A, HIGH);
   digitalWrite(PIN_LW_B, HIGH);
 }
 
 void handBrakeRight() {
+  analogWrite(PIN_RW_PWM, 0);
   digitalWrite(PIN_RW_A, HIGH);
   digitalWrite(PIN_RW_B, HIGH);
 }
@@ -302,8 +363,8 @@ void handBrake() {
 
 void onWheels() {
   // this depends on motor connections to driver
-  digitalWrite(PIN_LW_A, LOW);
-  digitalWrite(PIN_LW_B, HIGH);
+  digitalWrite(PIN_LW_A, HIGH);
+  digitalWrite(PIN_LW_B, LOW);
 
   digitalWrite(PIN_RW_A, LOW);
   digitalWrite(PIN_RW_B, HIGH);

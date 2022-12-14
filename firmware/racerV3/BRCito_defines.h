@@ -1,14 +1,15 @@
+// Pinout BRCito v0.9 agosto 2022
 
 // Wheel pins
 // Left wheel (LW)
 #define PIN_LW_PWM 6
-#define PIN_LW_A 13
-#define PIN_LW_B 10
+#define PIN_LW_A 10
+#define PIN_LW_B 13
 
 // Right wheel (RW)
 #define PIN_RW_PWM 5
-#define PIN_RW_A 11
-#define PIN_RW_B 12
+#define PIN_RW_A 12
+#define PIN_RW_B 11
 
 // Sensor array
 #define S1 A2
@@ -28,3 +29,15 @@
 
 #define LED_PIN 9
 #define BUTTON_PIN 7
+
+// leds
+#define LED_UP 0
+#define LED_DOWN 1
+
+// State Machine
+// actions
+#define BUTTON 0x22
+
+// states
+#define STDBY 0x24
+#define FOLLOW_LINE 0xFA
