@@ -39,9 +39,9 @@
 
 // Estos valores definen las velocidades de las ruedas
 #define VEL_MIN 0
-#define VEL_MAX 255
-#define VEL_CURVA 200
-#define MIN_ERR_THR 200
+#define VEL_MAX 255//130
+#define VEL_CURVA 220 // 110
+#define MIN_ERR_THR 150 // mayor error 
 
 // parámetros del controlador PID, para motores pololu de 1000rpm KP<1
 float KP = 2; // 0.3
@@ -305,8 +305,8 @@ void onWheels() {
   digitalWrite(PIN_LW_A, LOW);
   digitalWrite(PIN_LW_B, HIGH);
 
-  digitalWrite(PIN_RW_A, LOW);
-  digitalWrite(PIN_RW_B, HIGH);
+  digitalWrite(PIN_RW_A, HIGH);
+  digitalWrite(PIN_RW_B, LOW);
 }
 
 
