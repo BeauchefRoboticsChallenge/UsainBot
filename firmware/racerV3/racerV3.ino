@@ -32,21 +32,22 @@
 #include "BRCito_defines.h"
 
 // General definitions
-#define LW 0 // left wheel
-#define RW 1 // right wheel
+#define LW 0  // left wheel
+#define RW 1  // right wheel
 
 #define TIMEOUT 2500
 
 // Estos valores definen las velocidades de las ruedas
-#define VEL_MIN 10
-#define VEL_MAX 100
-#define VEL_CURVA 50
-#define MIN_ERR_THR 500//150
+#define VEL_MIN 220
+#define VEL_MAX 240        //130
+#define VEL_CURVA_MAX 230  // 110
+#define VEL_CURVA_MIN 0
+#define MIN_ERR_THR 1000
 
 // parámetros del controlador PID, para motores pololu de 1000rpm KP<1
-float KP = 1; // 0.3 //2
-float KI = 0.0;
-float KD = 5;  //5
+float KP = 3;  // 0.3 //2
+float KI = 0;
+float KD = 15;  //5
 
 // side sensor threshold
 #define RS_TH 500
@@ -85,6 +86,7 @@ int s_max = 0;
 float pos = 0;
 
 int counter = 0;
+int btn = 0;
 
 uint16_t sensorSide[NUM_SIDE_SENSORS];
 uint16_t sensorLine[NUM_ARRAY_SENSORS];
@@ -93,13 +95,13 @@ Adafruit_NeoPixel pixel = Adafruit_NeoPixel(2, LED_PIN, NEO_GRB + NEO_KHZ800);
 QTRSensors qtr_line, qtr_side;
 
 uint32_t BLACK = pixel.Color(0, 0, 0);
-uint32_t RED = pixel.Color(255, 0, 0); // rojo
-uint32_t GREEN = pixel.Color(0, 255, 0); // magenta
-uint32_t BLUE = pixel.Color(0, 0, 200); // magenta
-uint32_t MAGENTA = pixel.Color(255, 0, 200); // magenta
-uint32_t YELLOW = pixel.Color(255, 140, 0); // magenta
-uint32_t ORANGE = pixel.Color(255, 50, 0); // magenta
-uint32_t CYAN = pixel.Color(0, 140, 200); // cyan
+uint32_t RED = pixel.Color(255, 0, 0);        // rojo
+uint32_t GREEN = pixel.Color(0, 255, 0);      // magenta
+uint32_t BLUE = pixel.Color(0, 0, 200);       // magenta
+uint32_t MAGENTA = pixel.Color(255, 0, 200);  // magenta
+uint32_t YELLOW = pixel.Color(255, 140, 0);   // magenta
+uint32_t ORANGE = pixel.Color(255, 50, 0);    // magenta
+uint32_t CYAN = pixel.Color(0, 140, 200);     // cyan
 
 int state = STDBY;
 
@@ -131,13 +133,12 @@ void setupLeds() {
 
 void setupSensors() {
   qtr_side.setTypeRC();
-  qtr_side.setSensorPins((const uint8_t[]) {
-    PIN_LS, PIN_RS
-  }, NUM_SIDE_SENSORS);
+  qtr_side.setSensorPins((const uint8_t[]){
+                           PIN_LS, PIN_RS },
+                         NUM_SIDE_SENSORS);
   qtr_line.setTypeAnalog();
-  qtr_line.setSensorPins((const uint8_t[]) {
-    S1, S2, S3, S4, S5, S6,
-  }, NUM_ARRAY_SENSORS);
+  qtr_line.setSensorPins((const uint8_t[]){
+    S1, S2, S3, S4, S5, S6}, NUM_ARRAY_SENSORS);
 
 #ifdef CALIBRATE
   pixel.setPixelColor(LED_UP, RED);
@@ -156,7 +157,7 @@ void setupSensors() {
 
 void setup() {
 
-  Serial.begin(115200); // for BT communication and debug
+  Serial.begin(115200);  // for BT communication and debug
 
   setupWheels();
   setupLeds();
@@ -188,7 +189,6 @@ void loop() {
   // Step 1: Read Raw Sensors
   readRawSensors();
 
-
   //testBlink();
   /*
     testWheel(RW);
@@ -198,7 +198,41 @@ void loop() {
     handBrake();
   */
 
-  int btn = digitalRead(BUTTON_PIN);
+  btn = digitalRead(BUTTON_PIN);
+  debounceButton();
+
+  //DEBUG_PRINTLN(btn);
+
+  if (idleState == LOW) {
+    onWheels();
+    lineFollowing();
+    if (l_sensor < LS_TH) {
+      l_counter++;
+      pixel.setPixelColor(LED_UP, GREEN);
+      pixel.show();
+    } else if (r_sensor < RS_TH) {
+      r_counter++;
+      pixel.setPixelColor(LED_UP, ORANGE);
+      pixel.show();
+    } else {
+      pixel.setPixelColor(LED_UP, BLACK);
+      pixel.setPixelColor(LED_DOWN, BLUE);
+      pixel.show();
+    }
+    if (l_sensor < LS_TH && r_sensor < RS_TH) {
+      pixel.setPixelColor(LED_UP, BLUE);
+      pixel.show();
+    }
+  } else if (idleState == HIGH) {
+    pixel.setPixelColor(LED_UP, RED);
+    pixel.setPixelColor(LED_DOWN, RED);
+    pixel.show();
+    handBrake();
+  }
+  lastButtonState = btn;
+}
+
+void debounceButton() {
   // If the switch changed, due to noise or pressing:
   if (btn != lastButtonState) {
     // reset the debouncing timer
@@ -218,41 +252,7 @@ void loop() {
       }
     }
   }
-  //DEBUG_PRINTLN(btn);
-
-  if (idleState == LOW) {
-    onWheels();
-    lineFollowing();
-    if (l_sensor < LS_TH) {
-      l_counter++;
-      pixel.setPixelColor(LED_UP, GREEN);
-      pixel.show();
-    }
-    else if (r_sensor < RS_TH) {
-      r_counter++;
-      pixel.setPixelColor(LED_UP, ORANGE);
-      pixel.show();
-    }
-    else{
-      pixel.setPixelColor(LED_UP, BLACK);
-      pixel.setPixelColor(LED_DOWN, BLUE);
-      pixel.show();
-    }
-    if (l_sensor < LS_TH && r_sensor < RS_TH){
-      pixel.setPixelColor(LED_UP, BLUE);
-      pixel.show();
-    }
-  }
-  else if (idleState == HIGH) {
-    pixel.setPixelColor(LED_UP, RED);
-    pixel.setPixelColor(LED_DOWN, RED);
-    pixel.show();
-    handBrake();
-  }
-  lastButtonState = btn;
-
 }
-
 
 //-------------------------------
 // Line following functions
@@ -299,7 +299,6 @@ void readRawSensors() {
   //DEBUG_PRINTLN(pos);
   //DEBUG_PRINTLN(l_sensor);
   DEBUG_PRINTLN(r_sensor);
-
 }
 
 void computeError() {
@@ -310,38 +309,35 @@ void computeError() {
   last_err = prop_err;
   sum1 = 0;
   sum = 0;
-
 }
 
 void computePID() {
   pid_out = prop_err * KP + int_err * KI + der_err * KD;
-
-  //DEBUG_PRINTLN(pid_out);
-
+  pid_out = pid_out > 2500 ? 2500 : (pid_out < (-2500) ? -2500 : pid_out);
+  // DEBUG_PRINTLN(pid_out);
 }
 
 void computeMotorSpeeds() {
 
-  if ( pid_out > MIN_ERR_THR ) {
-    lw_speed = map(pid_out, -2500, 2500, VEL_MIN, VEL_CURVA);
-    rw_speed = VEL_MIN; //TODO: apagar motor
-  }
-  else if ( pid_out < -MIN_ERR_THR ) {
-    lw_speed = VEL_MIN;
-    rw_speed = map(pid_out, -2500, 2500, VEL_CURVA, VEL_MIN);
-  }
-  else {
-    lw_speed = map(pid_out, -2500, 2500, VEL_MAX, VEL_MIN);
-    rw_speed = map(pid_out, -2500, 2500, VEL_MAX, VEL_MIN);
-  }
+  if (pid_out > MIN_ERR_THR) {
+    lw_speed = map(pid_out, -2500, 2500, VEL_CURVA_MIN, VEL_CURVA_MAX);
+    rw_speed = VEL_CURVA_MIN;
 
-  //DEBUG_PRINTLN("LW: " + String(lw_speed) + "\tRW: " + String(rw_speed));
+  } else if (pid_out < -MIN_ERR_THR) {
+    lw_speed = VEL_CURVA_MIN;
+    rw_speed = map(pid_out, -2500, 2500, VEL_CURVA_MAX, VEL_CURVA_MIN);
+
+  } else {
+    int diff = VEL_MAX - VEL_MIN;
+    rw_speed = VEL_MIN + map(pid_out, -MIN_ERR_THR, MIN_ERR_THR, -diff, diff);
+    lw_speed = VEL_MIN + map(pid_out, -MIN_ERR_THR, MIN_ERR_THR, diff, -diff);
+  }
 }
+
 
 void setMotorSpeeds() {
   analogWrite(PIN_LW_PWM, lw_speed);
   analogWrite(PIN_RW_PWM, rw_speed);
-
 }
 
 void handBrakeLeft() {
@@ -366,9 +362,10 @@ void onWheels() {
   digitalWrite(PIN_LW_A, HIGH);
   digitalWrite(PIN_LW_B, LOW);
 
-  digitalWrite(PIN_RW_A, HIGH);
-  digitalWrite(PIN_RW_B, LOW);
+  digitalWrite(PIN_RW_A, LOW);
+  digitalWrite(PIN_RW_B, HIGH);
 }
+
 
 
 //-------------------------------
@@ -381,7 +378,6 @@ void testBlink() {
     pixel.show();
   */
   PlasmaPulse(30);
-
 }
 
 void testWheel(int wheel) {
@@ -398,8 +394,7 @@ void testWheel(int wheel) {
       Serial.println("Testing " + String(wheel == LW ? "left " : "right") + " wheel, power = " + String(i));
       delay(t);
     }
-  }
-  else if (wheel == LW) {
+  } else if (wheel == LW) {
     for (int i = 0; i < 255; i += 5) {
       analogWrite(PIN_LW_PWM, i);
       Serial.println("Testing " + String(wheel == LW ? "left " : "right") + " wheel, power = " + String(i));
@@ -463,7 +458,6 @@ void PlasmaPulse(uint8_t wait) {
   }
   pixel.show();
   delay(wait);
-
 }
 
 // Input a value 0 to 255 to get a color value.
