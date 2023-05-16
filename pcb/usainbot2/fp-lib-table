@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "usainbot")(type "KiCad")(uri "/home/fabuchile01/repos/brc/usainbot2/pcb/libs/usainbot.pretty")(options "")(descr ""))
+  (lib (name "Boards")(type "KiCad")(uri "/home/fabuchile01/Documents/KiCad/SparkFun-KiCad-Libraries-master/Footprints/Boards.pretty")(options "")(descr ""))
+)

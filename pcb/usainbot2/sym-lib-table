@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "usainbot")(type "KiCad")(uri "/home/fabuchile01/repos/brc/usainbot2/pcb/libs/usainbot.kicad_sym")(options "")(descr ""))
+  (lib (name "usainbot2-rescue")(type "Legacy")(uri "${KIPRJMOD}/usainbot2-rescue.lib")(options "")(descr ""))
+)
